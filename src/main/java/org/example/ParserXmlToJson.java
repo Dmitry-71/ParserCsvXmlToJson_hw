@@ -1,6 +1,7 @@
 package org.example;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -18,23 +19,32 @@ public class ParserXmlToJson {
 
     private static List<Employee> parseXML(String fileName) throws ParserConfigurationException, IOException, SAXException {
 
-        ArrayList<Employee> employees = new ArrayList<>();
+        List<Employee> list = new ArrayList<>();
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new File(fileName));
+        Document doc = builder.parse(fileName);
+        Node root = doc.getDocumentElement();
 
-        NodeList employeeElements = doc.getDocumentElement().getElementsByTagName("employee");
+        NodeList nodeList = root.getChildNodes();
 
-        for (int i = 0; i < employeeElements.getLength(); i++) {
-            Node employee = employeeElements.item(i);
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+            if (Node.ELEMENT_NODE == node.getNodeType()) {
+                Element employee = (Element) node;
 
-            employees.add(new Employee(Long.parseLong(employee.getChildNodes().item(1).getTextContent()),
-                    employee.getChildNodes().item(3).getTextContent(),
-                    employee.getChildNodes().item(5).getTextContent(),
-                    employee.getChildNodes().item(7).getTextContent(),
-                    Integer.parseInt(employee.getChildNodes().item(9).getTextContent())));
+                long id = Integer.parseInt(employee.getElementsByTagName("id").item(0).getTextContent());
+                String firstName = employee.getElementsByTagName("firstName").item(0).getTextContent();
+                String lastName = employee.getElementsByTagName("lastName").item(0).getTextContent();
+                String country = employee.getElementsByTagName("country").item(0).getTextContent();
+                int age = Integer.parseInt(employee.getElementsByTagName("age").item(0).getTextContent());
+
+                Employee employeeNewList = new Employee(id, firstName, lastName, country, age);
+                list.add(employeeNewList);
+            }
+
         }
-        return employees;
+
+        return list;
     }
 
     public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
